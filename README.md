@@ -17,18 +17,34 @@ The contour can then be flipped around the longest axis of the biface, which is 
 ![alt text](https://github.com/StijnDebackere/AScheck/blob/master/example_asymmetric_pixels.jpg "Asymmetric pixels")
 
 # Usage
-Currently, the script is very basic. It can be run by opening up your terminal and navigating to the directory where you keep the script. Make the script executable for you by running
+To run the script, you will need a [Python 3](https://www.python.org/downloads/)
+installation on your computer. This should be straightforward to install,
+following the instructions given on the website. Moreover, you will need to
+install the [NumPy](https://www.scipy.org/install.html),
+[Matplotlib](https://matplotlib.org/users/installing.html) and
+[opencv](https://pypi.org/project/opencv-python/) packages. Once all of these
+are installed, everything else should be straightforward.
 
-```bash
-chmod u+x ascheck.py
+Go to the folder where you have the `ascheck.py` script and open a terminal at
+this location (on a mac, this can be done by following the instructions
+[here](https://stackoverflow.com/q/420456).
+
+In the opened terminal window, type the following command:
+
+```
+python ascheck.py
 ```
 
-Then, you can run the script on a directory containing your images, e.g. path/to/images, with extension ext, e.g. jpg, by invoking
+A dialog will open asking you to select a folder where your images are
+located. Once you have selected the folder, the script will create a folder `bw/`
+in the selected folder where it saves the black and white outlines and it will
+save the asymmetry indices in a file called `ascheck_results.txt`.
 
-```bash
-./ascheck.py path/to/images jpg
-```
+This text file contains the image filename, its asymmetry index and a flag for
+the trustworthiness of the result.
 
-The script will create a folder bw in path/to/images where it saves the black and white outlines and it will save the asymmetry indices in a file called ascheck_results_folder.txt, where folder is the final folder in path/to/images.
-
-This text file contains the image filename and its asymmetry index.
+# Issues
+The object detection in the script is automatic and it assumes that the
+foreground object is clearly marked against the background. Do not put the
+object on a background with similar colours, since the script will fail in that
+case.

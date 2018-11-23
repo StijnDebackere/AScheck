@@ -22,7 +22,7 @@ import numpy as np
 import os
 import glob
 import argparse
-import tkFileDialog
+from tkinter import filedialog
 
 import matplotlib.pyplot as plt
 
@@ -170,7 +170,7 @@ def get_image_asymmetry(image):
 # End of get_image_asymmetry()
 # ----------------------------------------------------------------------
 # Ask user for input directory
-read_dir = tkFileDialog.askdirectory().rstrip(os.sep)
+read_dir = filedialog.askdirectory().rstrip(os.sep)
 
 bw_dir = read_dir + '/bw_new/'
 # create output directory
