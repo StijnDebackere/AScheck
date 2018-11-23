@@ -27,6 +27,23 @@ from tkinter import filedialog
 import matplotlib.pyplot as plt
 
 def fill_contour(image, contour, fill_value=255):
+    '''
+    Returns an image where contour is filled with fill_value
+
+    Parameters
+    ----------
+    image : array
+        image
+    contour : array with polygon points
+        cv2 contour
+    fill_value : float, int or tuple
+        color value to fill contour with
+
+    Returns
+    -------
+    contour_img : array like image
+        image with only the contour filled
+    '''
     temp = np.zeros_like(image)
     contour_img = cv2.fillPoly(np.uint8(temp), pts=[contour], color=fill_value)
     return contour_img
@@ -35,7 +52,22 @@ def fill_contour(image, contour, fill_value=255):
 # End of fill_contour()
 # ----------------------------------------------------------------------
 
-def center_on_contour(contour_img, contour):
+def center_on_contour(image, contour):
+    '''
+    Returns an image that is centered and focused contour
+
+    Parameters
+    ----------
+    image : array
+        image to center on contour
+    contour : array with polygon points
+        cv2 contour
+
+    Returns
+    -------
+    centered : array
+        image focused and centered on contour
+    '''
     # get maximum and minimum value of the contour along both axes
     mx = np.max(contour, axis=0)
     mn = np.min(contour, axis=0)
@@ -43,8 +75,8 @@ def center_on_contour(contour_img, contour):
     # calculate the centre + the extent in along both axes for the rock
     centre = np.round((mx + mn) / 2.).astype(int)
     extent = np.round((mx - mn) / 2.).astype(int)
-    centered = contour_img[centre[1] - extent[1]:centre[1] + extent[1]+1,
-                           centre[0] - extent[0]:centre[0] + extent[0]+1]
+    centered = image[centre[1] - extent[1]:centre[1] + extent[1]+1,
+                     centre[0] - extent[0]:centre[0] + extent[0]+1]
 
     return centered
 
@@ -53,6 +85,16 @@ def center_on_contour(contour_img, contour):
 # ----------------------------------------------------------------------
 
 def show_contours(image, contours):
+    '''
+    Show image with contours indicated
+
+    Parameters
+    ----------
+    image : array
+        image to center on contour
+    contours : array with polygon points for different contours
+        cv2 contour
+    '''
     if len(image.shape) == 2.:
         image_rgb = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 
@@ -65,6 +107,23 @@ def show_contours(image, contours):
 # ----------------------------------------------------------------------
 
 def threshold_image(image, method):
+    '''
+    Returns an image that is thresholded into a binary background and
+    foreground
+
+    Parameters
+    ----------
+    image : array
+        image to threshold
+    method : string 'Otsu' or 'GaussianThreshold'
+        method to use for the thresholding
+        (default='Otsu')
+
+    Returns
+    -------
+    image_thresh : array
+        thresholded image
+    '''
     methods = ['Otsu', 'GaussianThreshold']
     if method not in methods:
         print("Using Otsu's method")
@@ -89,6 +148,21 @@ def threshold_image(image, method):
 # ----------------------------------------------------------------------
 
 def open_and_close(image, iterations=2):
+    '''
+    Returns an image where the object should be filled up (closed) and
+    the noise removed (opened)
+
+    Parameters
+    ----------
+    image : array
+        image to threshold
+    iterations : int
+        Number of times to open and close the image
+    Returns
+    -------
+    closed : array
+        opened and closed image
+    '''
     # open up the image, removes noise
     opened = cv2.morphologyEx(image, cv2.MORPH_OPEN, None,
                               iterations=iterations)
@@ -102,6 +176,24 @@ def open_and_close(image, iterations=2):
 # ----------------------------------------------------------------------
 
 def calculate_asymmetry(image):
+    '''
+    Returns the asymmetry index A:
+
+        A = #asymmetric pixels / #total pixels in the object
+
+    The image of the thresholded object is flipped along its longest
+    axis and the difference between the minimal and maximal outline
+    gives the amount of asymmetric pixels.
+
+    Parameters
+    ----------
+    image : array
+        thresholded image to flip
+    Returns
+    -------
+    A : float
+        asymmetry index of the object
+    '''
     # flip image along longest axis
     shape = np.array(image.shape)
     flipped = np.flip(image, axis=np.argmin(shape))
@@ -115,7 +207,6 @@ def calculate_asymmetry(image):
     try:
         A = np.float(diff.sum()) / image.astype(bool).sum()
     except ZeroDivisionError:
-        print(f.split('/')[-1] + ' went wrong...')
         A = 1.
 
     return A
@@ -125,6 +216,21 @@ def calculate_asymmetry(image):
 # ----------------------------------------------------------------------
 
 def get_image_asymmetry(image):
+    '''
+    Process image to find the object and compute its asymmetry.
+
+    Parameters
+    ----------
+    image : array
+        image to process
+
+    Returns
+    -------
+    final : array
+        processed image with identified object
+    A : float
+        asymmetry index
+    '''
     # binarize image
     image_thresh = threshold_image(image, 'Otsu')
 
