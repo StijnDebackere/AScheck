@@ -10,8 +10,8 @@ pixels between the minimum and the maximum symmetric outline defines
 the asymmetric pixels. Dividing this number by the total number of
 pixels in the object, gives the asymmetry index.
 
-Go to the (official
-release)[https://github.com/StijnDebackere/AScheck/releases]
+Go to the [official
+release](https://github.com/StijnDebackere/AScheck/releases)
 
 # Usage
 ## Downloading executable
