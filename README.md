@@ -30,18 +30,18 @@ file](https://github.com/StijnDebackere/AScheck/blob/v0.1/ascheck.zip). In
 the `ascheck` folder, locate the `ascheck` file and double click it.
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_decompressed.jpg
+text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_decompressed.png
 "Decompressed zip folder")
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_folder.jpg
+text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_folder.png
 "ascheck file in folder")
 
 After double clicking, a dialog will open asking you for the folder
 that contains your images.
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_dialog.jpg
+text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_dialog.png
 "ascheck asking for folder")
 
 Choose the right folder and the program will run, creating a folder
