@@ -10,18 +10,8 @@ pixels between the minimum and the maximum symmetric outline defines
 the asymmetric pixels. Dividing this number by the total number of
 pixels in the object, gives the asymmetry index.
 
-# Example
-We start out with the image of a biface.
-
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example.jpg "Biface image")
-
-This image is then converted into a grayscale and the object is separated from the background. Now we have a black and white image of the biface for which we can find the contour.
-
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_bw.jpg "Biface image black and white")
-
-The contour can then be flipped around the longest axis of the biface, which is assumed to be the axis of symmetry. By taking the difference between the minimum and maximum symmetric outlines, we find the number of asymmetric pixels.
-
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_asymmetric_pixels.jpg "Asymmetric pixels")
+Go to the (official
+release)[https://github.com/StijnDebackere/AScheck/releases]
 
 # Usage
 ## Downloading executable
@@ -75,6 +65,19 @@ save the asymmetry indices in a file called `ascheck_results.txt`.
 
 This text file contains the image filename, its asymmetry index and a flag for
 the trustworthiness of the result.
+
+# Example
+We start out with the image of a biface.
+
+![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example.jpg "Biface image")
+
+This image is then converted into a grayscale and the object is separated from the background. Now we have a black and white image of the biface for which we can find the contour.
+
+![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_bw.jpg "Biface image black and white")
+
+The contour can then be flipped around the longest axis of the biface, which is assumed to be the axis of symmetry. By taking the difference between the minimum and maximum symmetric outlines, we find the number of asymmetric pixels.
+
+![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_asymmetric_pixels.jpg "Asymmetric pixels")
 
 # Issues
 The object detection in the script is automatic and it assumes that the
