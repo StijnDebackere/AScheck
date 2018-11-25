@@ -1,4 +1,4 @@
-#! /usr/local/bin/python
+#! /usr/local/bin/python3
 # ------------------------------------------------------------------------------
 # Ascheck computes the fraction of asymmetric pixels in an image of an object
 # Copyright (C) 2017  Laurie Hutchence & Stijn Debackere
@@ -20,11 +20,9 @@
 import cv2
 import numpy as np
 import os
+import sys
 import glob
-import argparse
-from tkinter import filedialog
-
-import matplotlib.pyplot as plt
+import tkinter.filedialog as filedialog
 
 def fill_contour(image, contour, fill_value=255):
     '''
@@ -94,13 +92,19 @@ def show_contours(image, contours):
         image to center on contour
     contours : array with polygon points for different contours
         cv2 contour
+
+    Returns
+    -------
+    image_contours : array
+        image with the contours overlaid in red
     '''
     if len(image.shape) == 2.:
         image_rgb = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 
-    plt.imshow(cv2.drawContours(image_rgb, contours, contourIdx=-1,
-                                color=(255,0,0), thickness=3))
-    plt.show()
+    image_contours = cv2.drawContours(image_rgb, contours, contourIdx=-1,
+                                      color=(255,0,0), thickness=3)
+
+    return image_contours
 
 # ----------------------------------------------------------------------
 # End of show_contours()
@@ -276,44 +280,52 @@ def get_image_asymmetry(image):
 # End of get_image_asymmetry()
 # ----------------------------------------------------------------------
 # Ask user for input directory
-read_dir = filedialog.askdirectory().rstrip(os.sep)
+read_dir = filedialog.askdirectory()
+# exit code if no directory selected
+# don't want to accidentally write to /
+if read_dir == "":
+    sys.exit("No directory selected")
+else:
+    read_dir = read_dir.rstrip(os.sep)
 
-bw_dir = read_dir + '/bw_new/'
-# create output directory
-if not os.path.exists(bw_dir):
-    os.makedirs(bw_dir)
+    bw_dir = read_dir + '/bw_new/'
+    # create output directory
+    if not os.path.exists(bw_dir):
+        os.makedirs(bw_dir)
 
-files = glob.glob(read_dir + '/*.*')
-info = np.empty((len(files), 3), dtype=object)
+    files = glob.glob(read_dir + '/*.*')
+    info = np.empty((1, 3), dtype=object)
 
-save_name = read_dir + '/ascheck_results.txt'
+    save_name = read_dir + '/ascheck_results.txt'
 
-for idx, f in enumerate(files):
-    ext = f.split('.')[-1]
+    for idx, f in enumerate(files):
+        ext = f.split('.')[-1]
 
-    # read greyscale data
-    image = cv2.imread(f, 0)
-    if image is None:
-        continue
+        # read greyscale data
+        image = cv2.imread(f, 0)
+        if image is None:
+            continue
 
-    # get final image and its asymmetry index
-    final, A = get_image_asymmetry(image)
+        # get final image and its asymmetry index
+        final, A = get_image_asymmetry(image)
 
-    # flag image as suspicious if size is abnormally small
-    # or if asymmetry is larger than 1
-    if ((final.shape[0] < image.shape[0] / 6.
-         or final.shape[1] < image.shape[1] / 6.)
-        or A >= 1.):
-        flag = 'suspicious'
-    else:
-        flag = 'OK'
+        # flag image as suspicious if size is abnormally small
+        # or if asymmetry is larger than 1
+        if ((final.shape[0] < image.shape[0] / 6.
+             or final.shape[1] < image.shape[1] / 6.)
+            or A >= 1.):
+            flag = 'suspicious'
+        else:
+            flag = 'OK'
 
-    # save image
-    fname = os.path.split(f)[-1].split('.')[0]
-    cv2.imwrite(bw_dir + fname + '_bw.{}'.format(ext), final)
+        # save image
+        fname = os.path.split(f)[-1].split('.')[0]
+        cv2.imwrite(bw_dir + fname + '_bw.{}'.format(ext), final)
 
-    # save info to array
-    info[idx] = [f, A, flag]
+        # save info to array
+        info = np.vstack([info, [f, A, flag]])
 
-np.savetxt(save_name, info.astype(str), fmt='%s', comments='#',
-           header='filename asymmetry_index flag')
+    info = info[1:]
+    np.savetxt(save_name, info.astype(str), fmt='%s', comments='#',
+               header='filename asymmetry_index flag')
+
