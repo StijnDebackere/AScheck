@@ -1,22 +1,55 @@
 # AScheck
-This script computes the asymmetry index of the biggest assumed object in an image. It was developed for Laurence Hutchence's MPhil thesis in archaeology to compute the asymmetry of archaeological bifaces. It greatly simplifies the task of classifying the asymmetry of large samples of bifaces.
+This script computes the asymmetry index of the biggest assumed object
+in an image. It greatly simplifies the task of classifying the
+asymmetry of large samples of bifaces.
 
-The object is found by reading in a grayscale image and then binarizing it in the object (which needs to have similar grayscale values) and the background using Otsu's method. The contour of the object is computed and the object is flipped alongst its longest axis. The difference in pixels between the minimum and the maximum symmetric outline defines the asymmetric pixels. Dividing this number by the total number of pixels in the object, gives the asymmetry index.
+The object is found by reading in an image and then binarizing it in
+the object and the background. The contour of the object is computed
+and the object is flipped along its longest axis. The difference in
+pixels between the minimum and the maximum symmetric outline defines
+the asymmetric pixels. Dividing this number by the total number of
+pixels in the object, gives the asymmetry index.
 
 # Example
 We start out with the image of a biface.
 
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/example.jpg "Biface image")
+![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example.jpg "Biface image")
 
 This image is then converted into a grayscale and the object is separated from the background. Now we have a black and white image of the biface for which we can find the contour.
 
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/example_bw.jpg "Biface image black and white")
+![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_bw.jpg "Biface image black and white")
 
 The contour can then be flipped around the longest axis of the biface, which is assumed to be the axis of symmetry. By taking the difference between the minimum and maximum symmetric outlines, we find the number of asymmetric pixels.
 
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/example_asymmetric_pixels.jpg "Asymmetric pixels")
+![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_asymmetric_pixels.jpg "Asymmetric pixels")
 
 # Usage
+## Downloading executable
+Download the [zip
+file](https://github.com/StijnDebackere/AScheck/blob/v0.1/ascheck.zip). In
+the `ascheck` folder, locate the `ascheck` file and double click it.
+
+![alt
+text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_decompressed.jpg
+"Decompressed zip folder")
+
+![alt
+text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_folder.jpg
+"ascheck file in folder")
+
+After double clicking, a dialog will open asking you for the folder
+that contains your images.
+
+![alt
+text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_dialog.jpg
+"ascheck asking for folder")
+
+Choose the right folder and the program will run, creating a folder
+`bw/` in the selected folder where it saves the black and white
+outlines and it will save the asymmetry indices in a file called
+`ascheck_results.txt`.
+
+## Running from source
 To run the script, you will need a [Python 3](https://www.python.org/downloads/)
 installation on your computer. This should be straightforward to install,
 following the instructions given on the website. Moreover, you will need to
