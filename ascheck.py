@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ------------------------------------------------------------------------------
+from __future__ import print_function
 import cv2
 import numpy as np
 import os
@@ -24,7 +25,10 @@ import sys
 import glob
 import tkinter.filedialog as filedialog
 
-def fill_contour(image, contour, fill_value=255):
+import pdb
+
+
+def extract_contour(image, contour, fill_value=255):
     '''
     Returns an image where contour is filled with fill_value
 
@@ -42,13 +46,14 @@ def fill_contour(image, contour, fill_value=255):
     contour_img : array like image
         image with only the contour filled
     '''
-    temp = np.zeros_like(image)
-    contour_img = cv2.fillPoly(np.uint8(temp), pts=[contour], color=fill_value)
+    if len(np.asarray(fill_value).shape) <= 1:
+        temp = np.zeros_like(image)
+        contour_img = cv2.fillPoly(np.uint8(temp),
+                                   pts=[contour],
+                                   color=fill_value)
+
     return contour_img
 
-# ----------------------------------------------------------------------
-# End of fill_contour()
-# ----------------------------------------------------------------------
 
 def center_on_contour(image, contour):
     '''
@@ -78,9 +83,6 @@ def center_on_contour(image, contour):
 
     return centered
 
-# ----------------------------------------------------------------------
-# End of center_on_contour()
-# ----------------------------------------------------------------------
 
 def show_contours(image, contours):
     '''
@@ -89,7 +91,7 @@ def show_contours(image, contours):
     Parameters
     ----------
     image : array
-        image to center on contour
+        image array
     contours : array with polygon points for different contours
         cv2 contour
 
@@ -101,14 +103,48 @@ def show_contours(image, contours):
     if len(image.shape) == 2.:
         image_rgb = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 
-    image_contours = cv2.drawContours(image_rgb, contours, contourIdx=-1,
-                                      color=(255,0,0), thickness=3)
+    image_contours = cv2.drawContours(image_rgb, contours,
+                                      contourIdx=-1,
+                                      color=(255, 0, 0), thickness=3)
 
     return image_contours
 
-# ----------------------------------------------------------------------
-# End of show_contours()
-# ----------------------------------------------------------------------
+
+def fill_contours(image, contours, color="gray"):
+    '''
+    Fill contours in image
+
+    Parameters
+    ----------
+    image : array
+        grayscale image
+    contours : array with polygon points for different contours
+        cv2 contour
+
+    Returns
+    -------
+    image_contours : array
+        image with the contours filled in red
+    '''
+    colors = ["gray", "RGB"]
+    if color not in colors:
+        print("color {} not recognized, using gray".format(color))
+        color = "gray"
+
+    if color == "RGB":
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    else:
+        image = np.uint8(image)
+
+    image_contours = np.copy(image)
+    for idx, contour in enumerate(contours):
+        color = 255 * (len(contours) - idx / 2) / len(contours)
+        image_contours = cv2.fillPoly(image_contours,
+                                      pts=[contour],
+                                      color=(0, 0, color))
+
+    return image_contours
+
 
 def threshold_image(image, method):
     '''
@@ -142,14 +178,12 @@ def threshold_image(image, method):
         ret, image_thresh = cv2.threshold(image_bw, 0, 255,
                                           cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     else:
-        image_thresh = cv2.adaptiveThreshold(image_bw, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+        image_thresh = cv2.adaptiveThreshold(image_bw, 255,
+                                             cv2.ADAPTIVE_THRESH_MEAN_C,
                                              cv2.THRESH_BINARY,
-                                             901,0)
+                                             901, 0)
     return image_thresh
 
-# ----------------------------------------------------------------------
-# End of threshold_image()
-# ----------------------------------------------------------------------
 
 def open_and_close(image, iterations=2):
     '''
@@ -175,9 +209,6 @@ def open_and_close(image, iterations=2):
                               iterations=iterations)
     return closed
 
-# ----------------------------------------------------------------------
-# End of erode_and_dilate()
-# ----------------------------------------------------------------------
 
 def calculate_asymmetry(image):
     '''
@@ -197,6 +228,8 @@ def calculate_asymmetry(image):
     -------
     A : float
         asymmetry index of the object
+    diff : array
+        image with asymmetric pixels
     '''
     # flip image along longest axis
     shape = np.array(image.shape)
@@ -213,13 +246,10 @@ def calculate_asymmetry(image):
     except ZeroDivisionError:
         A = 1.
 
-    return A
+    return A, np.uint8(diff) * 255
 
-# ----------------------------------------------------------------------
-# End of calculate_asymmetry()
-# ----------------------------------------------------------------------
 
-def get_image_asymmetry(image):
+def get_image_asymmetry(image, diagnostics=True):
     '''
     Process image to find the object and compute its asymmetry.
 
@@ -257,75 +287,91 @@ def get_image_asymmetry(image):
     hierarchy = hierarchy.reshape(len(contours), 4)
 
     # criterion for closed contour
-    closed = (hierarchy[:,2] < 0)
+    closed = (hierarchy[:, 2] < 0)
     # closed = (hierarchy[:,2] < 0) & (hierarchy[:,3] < 0)
 
     # need to get shapes of contours to find the largest closed one
     shapes = np.array([c.shape[0] for c in contours])
-    contour = contours[closed][shapes[closed].argmax()].reshape(-1,2)
+    contour = contours[closed][shapes[closed].argmax()].reshape(-1, 2)
+
+    if diagnostics:
+        image_padded_gray = cv2.copyMakeBorder(image, 50, 50, 50, 50,
+                                               cv2.BORDER_CONSTANT, value=255)
+        img_with_contour = fill_contours(image_padded_gray,
+                                         [contour],
+                                         color="RGB")
 
     # fill the contour
-    contour_img = fill_contour(image_thresh, contour)
+    contour_img = extract_contour(image_final, contour)
 
     # center on contour
     final = center_on_contour(contour_img, contour)
     final = final.astype('uint8')
 
     # get asymmetry
-    A = calculate_asymmetry(final)
+    A, diff = calculate_asymmetry(final)
 
-    return final, A
+    if diagnostics:
+        return final, A, diff, img_with_contour
+    else:
+        return final, A
 
-# ----------------------------------------------------------------------
-# End of get_image_asymmetry()
-# ----------------------------------------------------------------------
-# Ask user for input directory
-read_dir = filedialog.askdirectory()
-# exit code if no directory selected
-# don't want to accidentally write to /
-if read_dir == "":
-    sys.exit("No directory selected")
-else:
-    read_dir = read_dir.rstrip(os.sep)
 
-    bw_dir = read_dir + '/bw_new/'
-    # create output directory
-    if not os.path.exists(bw_dir):
-        os.makedirs(bw_dir)
+def main():
+    # Ask user for input directory
+    read_dir = filedialog.askdirectory()
+    # exit code if no directory selected
+    # don't want to accidentally write to /
+    if read_dir == "":
+        sys.exit("No directory selected")
+    else:
+        read_dir = read_dir.rstrip(os.sep)
 
-    files = glob.glob(read_dir + '/*.*')
-    info = np.empty((1, 3), dtype=object)
+        bw_dir = read_dir + '/bw/'
+        # create output directory
+        if not os.path.exists(bw_dir):
+            os.makedirs(bw_dir)
 
-    save_name = read_dir + '/ascheck_results.txt'
+        files = glob.glob(read_dir + '/*.*')
+        info = np.empty((1, 3), dtype=object)
 
-    for idx, f in enumerate(files):
-        ext = f.split('.')[-1]
+        save_name = read_dir + '/ascheck_results.txt'
 
-        # read greyscale data
-        image = cv2.imread(f, 0)
-        if image is None:
-            continue
+        for idx, f in enumerate(files):
+            ext = f.split('.')[-1]
 
-        # get final image and its asymmetry index
-        final, A = get_image_asymmetry(image)
+            # read greyscale data
+            image = cv2.imread(f, 0)
+            if image is None:
+                continue
 
-        # flag image as suspicious if size is abnormally small
-        # or if asymmetry is larger than 1
-        if ((final.shape[0] < image.shape[0] / 6.
-             or final.shape[1] < image.shape[1] / 6.)
-            or A >= 1.):
-            flag = 'suspicious'
-        else:
-            flag = 'OK'
+            # get final image and its asymmetry index
+            final, A, diff, img_contour = get_image_asymmetry(image,
+                                                              diagnostics=True)
 
-        # save image
-        fname = os.path.split(f)[-1].split('.')[0]
-        cv2.imwrite(bw_dir + fname + '_bw.{}'.format(ext), final)
+            # flag image as suspicious if size is abnormally small
+            # or if asymmetry is larger than 1
+            if ((final.shape[0] < image.shape[0] / 6.
+                 or final.shape[1] < image.shape[1] / 6.)
+                or A >= 1.):
+                flag = 'suspicious'
+            else:
+                flag = 'OK'
 
-        # save info to array
-        info = np.vstack([info, [f, A, flag]])
+            # save image
+            fname = os.path.split(f)[-1].split('.')[0]
+            cv2.imwrite(bw_dir + fname + '_bw.{}'.format(ext), final)
+            cv2.imwrite(bw_dir + fname + '_asym.{}'.format(ext), diff)
+            cv2.imwrite(bw_dir + fname + '_contour.{}'.format(ext),
+                        img_contour)
 
-    info = info[1:]
-    np.savetxt(save_name, info.astype(str), fmt='%s', comments='#',
-               header='filename asymmetry_index flag')
+            # save info to array
+            info = np.vstack([info, [f, A, flag]])
 
+        info = info[1:]
+        np.savetxt(save_name, info.astype(str), fmt='%s', comments='#',
+                   header='filename asymmetry_index flag')
+
+
+if __name__ == "__main__":
+    main()
