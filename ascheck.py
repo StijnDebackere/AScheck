@@ -270,7 +270,7 @@ def get_image_asymmetry(image, diagnostics=True):
 
     # we pad the image to avoid edge effects and to help smoothing out noise
     image_thresh_padded = cv2.copyMakeBorder(image_thresh, 50, 50, 50, 50,
-                                             cv2.BORDER_CONSTANT, value=255)
+                                             cv2.BORDER_REPLICATE)
 
     # now we open and close the image
     image_final = open_and_close(image_thresh_padded)
@@ -296,7 +296,7 @@ def get_image_asymmetry(image, diagnostics=True):
 
     if diagnostics:
         image_padded_gray = cv2.copyMakeBorder(image, 50, 50, 50, 50,
-                                               cv2.BORDER_CONSTANT, value=255)
+                                               cv2.BORDER_REPLICATE)
         img_with_contour = fill_contours(image_padded_gray,
                                          [contour],
                                          color="RGB")
