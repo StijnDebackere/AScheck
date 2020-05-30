@@ -13,7 +13,7 @@ Currently, the script can compute the asymmetry index of the biggest
 assumed object in an image and it can compute the width of the object
 at a given set of intervals along its longest dimension.
 
-The assymetry of the object can be computed by flipping it along its
+The asymmetry of the object can be computed by flipping it along its
 longest axis. The difference in pixels between the minimum and the
 maximum symmetric outline defines the asymmetric pixels. Dividing this
 number by the total number of pixels in the object, gives the
@@ -146,7 +146,7 @@ which is assumed to be the axis of symmetry. By taking the difference
 between the minimum and maximum symmetric outlines, we find the number
 of asymmetric pixels.
 
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_asymmetric_pixels.jpg "Asymmetric pixels")
+![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_asym.jpg "Asymmetric pixels")
 
 Computing the intervals along the longest axis, the intersections with
 the contour can then be found.
