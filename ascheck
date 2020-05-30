@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ------------------------------------------------------------------------------
 from __future__ import print_function
-from ascheck_core.ascheck_core import Image
+from core.ascheck import Image
 import cv2
 import glob
 import matplotlib.pyplot as plt
