@@ -1,4 +1,4 @@
-#! /usr/local/bin/python3
+#! /usr/bin/env python3
 # ------------------------------------------------------------------------------
 # Ascheck computes the fraction of asymmetric pixels in an image of an object
 # Copyright (C) 2017  Laurie Hutchence & Stijn Debackere
