@@ -13,8 +13,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/StijnDebackere/AScheck",
     packages=setuptools.find_packages(),
-    install_requires=["opencv-python",
+    install_requires=["opencv-python>=4.2.0",
                       "numpy",
+                      "matplotlib"
                       "scipy"],
     scripts=["ascheck"],
     python_requires='>=3.6',

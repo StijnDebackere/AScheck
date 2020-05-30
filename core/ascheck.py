@@ -49,6 +49,8 @@ class Image(object):
                                 cv2.IMREAD_UNCHANGED)
         self.image_bw = cv2.imread(self.filename,
                                    cv2.IMREAD_GRAYSCALE)
+        if self.image is None:
+            raise TypeError("{} is not an image".format(self.filename))
 
     def threshold_image(self,
                         image,
@@ -311,22 +313,42 @@ class Image(object):
         upper[:, np.argmin(extent)] /= geom_mean
 
         if save:
+            # longest axis along columns
+            if np.argmax(extent) == 1:
+                centers_x = centers[:, 1].reshape(-1, 1)
+                centers_y = centers[:, 0].reshape(-1, 1)
+                lower_x = lower[:, 1].reshape(-1, 1)
+                lower_y = lower[:, 0].reshape(-1, 1)
+                upper_x = upper[:, 1].reshape(-1, 1)
+                upper_y = upper[:, 0].reshape(-1, 1)
+            # longest axis along rows -> flip to keep things consistent
+            elif np.argmax(extent) == 0:
+                centers_x = centers[:, 0].reshape(-1, 1)
+                centers_y = centers[:, 1].reshape(-1, 1)
+                lower_x = lower[:, 0].reshape(-1, 1)
+                lower_y = lower[:, 1].reshape(-1, 1)
+                upper_x = upper[:, 0].reshape(-1, 1)
+                upper_y = upper[:, 1].reshape(-1, 1)
+
             info = np.concatenate([intervals.reshape(-1, 1),
                                    centers,
                                    coords.reshape(coords.shape[0] // 2, 4),
-                                   centers_norm,
-                                   lower, upper],
+                                   centers_x - centers_x[0],
+                                   centers_y - centers_y[0],
+                                   lower_x, lower_y,
+                                   upper_x, upper_y],
                                   axis=-1)
+
             np.savetxt(self.save_dir + self.img_name + "_slices.csv",
                        info, delimiter=",",
                        fmt=["%.3f", "%i", "%i", "%i", "%i", "%i", "%i",
                             "%i", "%i", "%.3f", "%.3f", "%.3f", "%.3f"],
-                       header=("interval, center x, center y, "
-                               "lower x, lower y, "
-                               "upper x, upper y, "
-                               "center norm x, center norm y, "
-                               "lower norm x, lower norm y, "
-                               "upper norm x, upper norm y"))
+                       header=("interval, true center x, true center y, "
+                               "true lower x, true lower y, "
+                               "true upper x, true upper y, "
+                               "center norm long, center norm short, "
+                               "lower norm long, lower norm short, "
+                               "upper norm long, upper norm short"))
         else:
             return (centers[:, ::-1], coords[:, ::-1],
                     centers_norm[:, ::-1], coords_norm[:, ::-1])
