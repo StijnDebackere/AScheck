@@ -5,7 +5,7 @@ with open("readme.md", "r") as fh:
 
 setuptools.setup(
     name="ascheck", # Replace with your own username
-    version="0.0.1",
+    version="0.0.2",
     author="Stijn Debackere",
     author_email="debackere@strw.leidenuniv.nl",
     description="A package to perform image analysis on archaeological tools.",
@@ -15,7 +15,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=["opencv-python>=4.2.0",
                       "numpy",
-                      "matplotlib"
+                      "matplotlib>=2.0.0",
                       "scipy"],
     scripts=["ascheck"],
     python_requires='>=3.6',
@@ -25,3 +25,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ]
 )
+
+
