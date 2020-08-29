@@ -5,7 +5,7 @@ with open("readme.md", "r") as fh:
 
 setuptools.setup(
     name="ascheck", # Replace with your own username
-    version="0.0.2",
+    version="0.0.3",
     author="Stijn Debackere",
     author_email="debackere@strw.leidenuniv.nl",
     description="A package to perform image analysis on archaeological tools.",
