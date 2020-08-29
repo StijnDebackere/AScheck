@@ -20,6 +20,7 @@
 from __future__ import print_function
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 import scipy.stats as stats
 import os
 
@@ -45,20 +46,26 @@ class Image(object):
             self.save_dir = "/".join(path_list[:-1]) + "/"
 
     def _load_image(self):
-        self.image = cv2.imread(self.filename,
-                                cv2.IMREAD_UNCHANGED)
-        self.image_bw = cv2.imread(self.filename,
-                                   cv2.IMREAD_GRAYSCALE)
+        self.image = cv2.imread(
+            self.filename,
+            cv2.IMREAD_UNCHANGED
+        )
+        self.image_bw = cv2.imread(
+            self.filename,
+            cv2.IMREAD_GRAYSCALE
+        )
         if self.image is None:
             raise TypeError("{} is not an image".format(self.filename))
 
-    def threshold_image(self,
-                        image,
-                        thresh=0, maxval=255,
-                        blur=True,
-                        open_close=True,
-                        iterations=2,
-                        method=cv2.THRESH_BINARY+cv2.THRESH_OTSU):
+    def threshold_image(
+            self,
+            image,
+            thresh=0, maxval=255,
+            blur=True,
+            open_close=True,
+            iterations=2,
+            method=cv2.THRESH_BINARY+cv2.THRESH_OTSU
+    ):
         '''
         Returns an image that is thresholded into a binary background and
         foreground
@@ -87,19 +94,28 @@ class Image(object):
         '''
         if blur:
             img_blur = cv2.blur(image, (5, 5))
-            ret, image_thresh = cv2.threshold(img_blur,
-                                              thresh, maxval, method)
+            ret, image_thresh = cv2.threshold(
+                img_blur, thresh, maxval, method
+            )
         else:
-            ret, image_thresh = cv2.threshold(image,
-                                              thresh, maxval, method)
+            ret, image_thresh = cv2.threshold(
+                image, thresh, maxval, method
+            )
 
         if open_close:
-            image_thresh = self.open_and_close_image(image_thresh,
-                                                     iterations=iterations)
+            image_thresh = self.open_and_close_image(
+                image_thresh, iterations=iterations
+            )
 
         return image_thresh
 
-    def pad_image(self, image, size, value=None, method=cv2.BORDER_REPLICATE):
+    def pad_image(
+            self,
+            image,
+            size,
+            value=None,
+            method=cv2.BORDER_REPLICATE
+    ):
         '''
         Pad img by size along each edge using method
 
@@ -119,12 +135,16 @@ class Image(object):
         if method not in methods:
             raise ValueError("method should be in {}".format(methods))
         if method == cv2.BORDER_CONSTANT:
-            return cv2.copyMakeBorder(image, size, size, size, size,
-                                      cv2.BORDER_CONSTANT, value)
+            return cv2.copyMakeBorder(
+                image, size, size, size, size,
+                cv2.BORDER_CONSTANT, value
+            )
 
         else:
-            return cv2.copyMakeBorder(image, size, size, size, size,
-                                      cv2.BORDER_REPLICATE)
+            return cv2.copyMakeBorder(
+                image, size, size, size, size,
+                cv2.BORDER_REPLICATE
+            )
 
     def open_and_close_image(self, image, iterations=2):
         '''
@@ -143,17 +163,23 @@ class Image(object):
             opened and closed image
         '''
         # open up the image, removes noise
-        opened = cv2.morphologyEx(image, cv2.MORPH_OPEN, None,
-                                  iterations=iterations)
+        opened = cv2.morphologyEx(
+            image, cv2.MORPH_OPEN, None,
+            iterations=iterations
+        )
         # close the image, fill up inner regions
-        closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, None,
-                                  iterations=iterations)
+        closed = cv2.morphologyEx(
+            opened, cv2.MORPH_CLOSE, None,
+            iterations=iterations
+        )
         return closed
 
     def max_closed_contour(self, image):
-        contours, hierarchy = cv2.findContours(image,
-                                               cv2.RETR_CCOMP,
-                                               cv2.CHAIN_APPROX_NONE)
+        contours, hierarchy = cv2.findContours(
+            image,
+            cv2.RETR_CCOMP,
+            cv2.CHAIN_APPROX_NONE
+        )
         contours = np.array(contours)
         hierarchy = hierarchy.reshape(len(contours), 4)
 
@@ -186,14 +212,18 @@ class Image(object):
         color = np.atleast_1d(color).astype(int)
         if color.shape[0] == 3:
             image_rgb = cv2.cvtColor(image_bw, cv2.COLOR_GRAY2RGB)
-            image_contour = cv2.fillPoly(image_rgb,
-                                         pts=[contour],
-                                         color=color.tolist())
+            image_contour = cv2.fillPoly(
+                image_rgb,
+                pts=[contour],
+                color=color.tolist()
+            )
         elif color.shape[0] == 1:
             temp = np.copy(image_bw)
-            image_contour = cv2.fillPoly(np.uint8(temp),
-                                         pts=[contour],
-                                         color=color.tolist())
+            image_contour = cv2.fillPoly(
+                np.uint8(temp),
+                pts=[contour],
+                color=color.tolist()
+            )
 
         return image_contour
 
@@ -294,9 +324,11 @@ class Image(object):
             # direction
             slice_edge = contour[:, ::-1][match, np.argmin(extent)]
             min_max_idx = [np.argmin(slice_edge), np.argmax(slice_edge)]
-            coords = np.concatenate([coords,
-                                     contour[:, ::-1][match][min_max_idx]],
-                                    axis=0)
+            coords = np.concatenate(
+                [
+                    coords, contour[:, ::-1][match][min_max_idx]
+                ],
+                axis=0)
 
         centers_norm = centers - centers[0]
         coords_norm = (coords.reshape(coords.shape[0] // 2, 2, 2) -
@@ -341,17 +373,23 @@ class Image(object):
 
             np.savetxt(self.save_dir + self.img_name + "_slices.csv",
                        info, delimiter=",",
-                       fmt=["%.3f", "%i", "%i", "%i", "%i", "%i", "%i",
-                            "%i", "%i", "%.3f", "%.3f", "%.3f", "%.3f"],
-                       header=("interval, true center x, true center y, "
-                               "true lower x, true lower y, "
-                               "true upper x, true upper y, "
-                               "center norm long, center norm short, "
-                               "lower norm long, lower norm short, "
-                               "upper norm long, upper norm short"))
+                       fmt=[
+                           "%.3f", "%i", "%i", "%i", "%i", "%i", "%i",
+                           "%i", "%i", "%.3f", "%.3f", "%.3f", "%.3f"
+                       ],
+                       header=(
+                           "interval, true center x, true center y, "
+                           "true lower x, true lower y, "
+                           "true upper x, true upper y, "
+                           "center norm long, center norm short, "
+                           "lower norm long, lower norm short, "
+                           "upper norm long, upper norm short"
+                       ))
         else:
-            return (centers[:, ::-1], coords[:, ::-1],
-                    centers_norm[:, ::-1], coords_norm[:, ::-1])
+            return (
+                centers[:, ::-1], coords[:, ::-1],
+                centers_norm[:, ::-1], coords_norm[:, ::-1]
+            )
 
     def calculate_asymmetry(self, image):
         '''
@@ -378,6 +416,7 @@ class Image(object):
         shape = np.array(image.shape)
         flipped = np.flip(image, axis=np.argmin(shape))
 
+
         # Compute difference
         diff_1 = image - flipped
         diff_2 = np.flip(diff_1, axis=np.argmin(shape))
@@ -385,7 +424,8 @@ class Image(object):
         diff = np.logical_or(diff_1, diff_2)
 
         try:
-            A = np.float(diff.sum()) / image.astype(bool).sum()
+            # need to invert image, since the contour is filled with zeroes
+            A = np.float(diff.sum()) / (~image.astype(bool)).sum()
         except ZeroDivisionError:
             A = 1.
 

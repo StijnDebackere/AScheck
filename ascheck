@@ -59,16 +59,21 @@ def main():
                 except TypeError:
                     # if not an image file, go to next loop
                     continue
-                img_thresh = img.threshold_image(img.image_bw,
-                                                 open_close=False)
-                img_final = img.open_and_close_image(img.pad_image(img_thresh,
-                                                                   size=50),
-                                                     iterations=4)
+
+                img_thresh = img.threshold_image(
+                    img.image_bw,
+                    open_close=False
+                )
+                img_final = img.open_and_close_image(
+                    img.pad_image(img_thresh, size=50),
+                    iterations=4
+                )
                 contour = img.max_closed_contour(img_final)
 
                 img_contour = img.fill_contour(img_final, contour, 0)
-                final = img.center_on_contour(img_contour,
-                                              contour).astype('uint8')
+                final = img.center_on_contour(
+                    img_contour, contour
+                ).astype('uint8')
 
                 A, diff = img.calculate_asymmetry(final)
 
@@ -87,7 +92,9 @@ def main():
                                                                 size=50),
                                                   contour)
                     prefix = img.save_dir + img.img_name
-                    cv2.imwrite(prefix + '_bw{}'.format(img.img_ext), final)
+                    # the black and white image needs to be inverted for the
+                    # sum of the asymmetric pixels
+                    cv2.imwrite(prefix + '_bw{}'.format(img.img_ext), ~final)
                     cv2.imwrite(prefix + '_asym{}'.format(img.img_ext), diff)
                     cv2.imwrite(prefix + '_contour{}'.format(img.img_ext),
                                 img_filled)
