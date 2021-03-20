@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ------------------------------------------------------------------------------
 from __future__ import print_function
-from core.ascheck import Image
+from ascheck import Image
 import cv2
 import glob
 import matplotlib.pyplot as plt
@@ -38,16 +38,17 @@ def main():
     if read_dir == "":
         sys.exit("No directory selected")
     else:
-        files = glob.glob(read_dir + '/*.*')
+        files = glob.glob(read_dir + "/*.*")
         files.sort()
 
         asym = mb.askyesno(title="Options", message="Compute asymmetry?")
         sl = mb.askyesno(title="Options", message="Compute slices?")
 
         if asym:
-            diagnostics = mb.askyesno(title="Options",
-                                      message="Save diagnostic images?")
-            bw_dir = read_dir + '/bw/'
+            diagnostics = mb.askyesno(
+                title="Options", message="Save diagnostic images?"
+            )
+            bw_dir = read_dir + "/bw/"
             # create output directory
             if not os.path.exists(bw_dir):
                 os.makedirs(bw_dir)
@@ -60,63 +61,67 @@ def main():
                     # if not an image file, go to next loop
                     continue
 
-                img_thresh = img.threshold_image(
-                    img.image_bw,
-                    open_close=False
-                )
+                img_thresh = img.threshold_image(img.bw, open_close=False)
                 img_final = img.open_and_close_image(
-                    img.pad_image(img_thresh, size=50),
-                    iterations=4
+                    img.pad_image(img_thresh, size=50), iterations=4
                 )
                 contour = img.max_closed_contour(img_final)
 
                 img_contour = img.fill_contour(img_final, contour, 0)
-                final = img.center_on_contour(
-                    img_contour, contour
-                ).astype('uint8')
+                final, contour_centered = img.center_on_contour(
+                    img_contour, contour, return_contour=True
+                )
 
-                A, diff = img.calculate_asymmetry(final)
+                A, diff = img.calculate_asymmetry(final.astype(np.uint8))
 
                 # flag image as suspicious if size is abnormally small
                 # or if asymmetry is larger than 1
-                if ((final.shape[0] < img.image_bw.shape[0] / 6.
-                     or final.shape[1] < img.image_bw.shape[1] / 6.)
-                    or A >= 1.):
-                    flag = 'suspicious'
+                if (
+                    final.shape[0] < img.bw.shape[0] / 6.0
+                    or final.shape[1] < img.bw.shape[1] / 6.0
+                ) or A >= 1.0:
+                    flag = "suspicious"
                 else:
-                    flag = 'OK'
+                    flag = "OK"
 
                 # get extra diagnostics to check performance
                 if diagnostics:
-                    img_filled = img.fill_contour(img.pad_image(img.image_bw,
-                                                                size=50),
-                                                  contour)
-                    prefix = img.save_dir + img.img_name
+                    img_filled = img.fill_contour(
+                        img.pad_image(img.bw, size=50), contour
+                    )
+                    img_contour = img.visualize_contour(
+                        contour_centered, size=1000
+                    )
+                    prefix = img.save_dir + img.name
                     # the black and white image needs to be inverted for the
                     # sum of the asymmetric pixels
-                    cv2.imwrite(prefix + '_bw{}'.format(img.img_ext), ~final)
-                    cv2.imwrite(prefix + '_asym{}'.format(img.img_ext), diff)
-                    cv2.imwrite(prefix + '_contour{}'.format(img.img_ext),
-                                img_filled)
+                    cv2.imwrite(f"{prefix}_bw.png", ~final)
+                    cv2.imwrite(f"{prefix}_asym.png", diff)
+                    cv2.imwrite(f"{prefix}_filled{img.ext}", img_filled)
+                    cv2.imwrite(f"{prefix}_contour.png", img_contour)
 
                 # save info to array
                 info = np.vstack([info, [f, A, flag]])
 
             info = info[1:]
-            np.savetxt(img.save_dir + "ascheck_results.txt",
-                       info.astype(str), fmt='%s', comments='#',
-                       header='filename asymmetry_index flag')
+            np.savetxt(
+                img.save_dir + "ascheck_results.txt",
+                info.astype(str),
+                fmt="%s",
+                comments="#",
+                header="filename asymmetry_index flag",
+            )
 
         if sl:
-            n_slices = simpledialog.askinteger("Pick",
-                                               "Number of slices",
-                                               initialvalue=20,
-                                               minvalue=5, maxvalue=100)
-            diagnostics = mb.askyesno(title="Options",
-                                      message="Save diagnostic images?")
+            n_slices = simpledialog.askinteger(
+                "Pick", "Number of slices", initialvalue=20, minvalue=5, maxvalue=100
+            )
+            diagnostics = mb.askyesno(
+                title="Options", message="Save diagnostic images?"
+            )
             intervals = np.linspace(0, 1, n_slices)
 
-            sl_dir = read_dir + '/slices/'
+            sl_dir = read_dir + "/slices/"
             # create output directory
             if not os.path.exists(sl_dir):
                 os.makedirs(sl_dir)
@@ -127,33 +132,31 @@ def main():
                 except TypeError:
                     # if not an image file, go to next loop
                     continue
-                img_thresh = img.threshold_image(img.image_bw,
-                                                 open_close=False)
-                img_final = img.open_and_close_image(img.pad_image(img_thresh,
-                                                                   size=50),
-                                                     iterations=4)
+                img_thresh = img.threshold_image(img.bw, open_close=False)
+                img_final = img.open_and_close_image(
+                    img.pad_image(img_thresh, size=50), iterations=4
+                )
                 contour = img.max_closed_contour(img_final)
-                img_contour = img.fill_contour(img_final, contour, 0)      
+                img_contour = img.fill_contour(img_final, contour, 0)
 
                 img.slice_intervals(img_contour, contour, intervals)
 
                 if diagnostics:
-                    img_color = img.fill_contour(img.pad_image(img.image_bw,
-                                                               size=50),
-                                                 contour)
-                    c, crds, c_n, crds_n = img.slice_intervals(img_contour,
-                                                               contour,
-                                                               intervals,
-                                                               save=False)
+                    img_color = img.fill_contour(
+                        img.pad_image(img.bw, size=50), contour
+                    )
+                    c, crds, c_n, crds_n = img.slice_intervals(
+                        img_contour, contour, intervals, save=False
+                    )
 
                     plt.imshow(img_color)
-                    plt.plot(c[:, 0], c[:, 1], lw=0, marker="x",
-                             markersize=10)
-                    plt.plot(crds[:, 0], crds[:, 1], lw=0, marker="o",
-                             markersize=10)
-                    plt.savefig(img.save_dir + img.img_name
-                                + "_slices.png",
-                                dpi=200, transparent=True)
+                    plt.plot(c[:, 0], c[:, 1], lw=0, marker="x", markersize=10)
+                    plt.plot(crds[:, 0], crds[:, 1], lw=0, marker="o", markersize=10)
+                    plt.savefig(
+                        img.save_dir + img.name + "_slices.png",
+                        dpi=200,
+                        transparent=True,
+                    )
                     plt.clf()
 
 

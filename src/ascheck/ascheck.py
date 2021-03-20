@@ -36,18 +36,33 @@ class Image(object):
 
         # extract filename to prepend
         path_list = self.filename.rstrip(os.sep).split("/")
-        self.img_name = os.path.splitext(path_list[-1])[0]
-        self.img_ext = os.path.splitext(path_list[-1])[1]
+        self.name = os.path.splitext(path_list[-1])[0]
+        self.ext = os.path.splitext(path_list[-1])[1]
         self.save_dir = save_dir
 
         if save and save_dir is None:
             self.save_dir = "/".join(path_list[:-1]) + "/"
 
     def _load_image(self):
-        self.image = cv2.imread(self.filename, cv2.IMREAD_UNCHANGED)
-        self.image_bw = cv2.imread(self.filename, cv2.IMREAD_GRAYSCALE)
-        if self.image is None:
+        self.orig = cv2.imread(self.filename, cv2.IMREAD_UNCHANGED)
+        self.bw = cv2.imread(self.filename, cv2.IMREAD_GRAYSCALE)
+        if self.orig is None:
             raise TypeError("{} is not an image".format(self.filename))
+
+    def resize_image(self, img=None, size=None, fix_aspect=True):
+        """Resize """
+        if img is None:
+            img = self.orig
+        if size is None:
+            return img
+
+        size = np.atleast_1d(size)
+        if fix_aspect:
+            size = np.round(
+                np.array(img.shape[:2]) * size / img.shape[np.argmax(img.shape[:2])]
+            ).astype(int)
+
+        return cv2.resize(img, dsize=tuple(size[::-1]))
 
     def threshold_image(
         self,
@@ -61,7 +76,7 @@ class Image(object):
     ):
         """
         Returns an image that is thresholded into a binary background and
-        foreground
+        foreground.
 
         Parameters
         ----------
@@ -130,7 +145,7 @@ class Image(object):
     def open_and_close_image(self, image, iterations=2):
         """
         Returns an image where the object should be filled up (closed) and
-        the noise removed (opened)
+        the noise removed (opened).
 
         Parameters
         ----------
@@ -194,7 +209,7 @@ class Image(object):
 
         return image_contour
 
-    def center_on_contour(self, image, contour):
+    def center_on_contour(self, image, contour, return_contour=False):
         """
         Returns an image that is centered and focused contour
 
@@ -204,11 +219,16 @@ class Image(object):
             image to center on contour
         contour : array with polygon points
             cv2 contour
+        return_contour : bool
+            return centered contour values
 
         Returns
         -------
         centered : array
             image focused and centered on contour
+        if return_contour:
+            contour : array
+                new contour values
         """
         # get maximum and minimum value of the contour along both axes
         # contour has (x, y) coordinates -> swap to rows, columns for slicing
@@ -225,7 +245,47 @@ class Image(object):
             center[1] - extent[1] : center[1] + extent[1] + 1,
         ]
 
+        if return_contour:
+            new_contour = contour - (center - extent)[::-1]
+            return centered, new_contour
+
         return centered
+
+    def visualize_contour(self, contour, size=None, thickness=5, pad_fraction=0.05):
+        """Visualize contour in a separate image with transparent background."""
+        extent = np.max(contour.max(axis=0) - contour.min(axis=0))
+        # center the contour on the minimum and add fractional padding to
+        # preserve correct extent for different contours
+        contour_padded = (contour - contour.min(axis=0) + np.round(pad_fraction * extent)).astype(int)
+
+
+        image = (
+            np.ones(
+                tuple(contour_padded.max(axis=0)[::-1] + np.round(pad_fraction * extent).astype(int)) + (4,),
+                dtype=np.uint8,
+            )
+            * 255
+        )
+        image[..., -1] = 0
+
+        # normalize thickness to final size
+        if size is not None:
+            thickness = np.int(np.max(image.shape[:2]) / size * thickness)
+
+        contour_image = cv2.drawContours(
+            image=image,
+            contours=[contour_padded],
+            contourIdx=0,
+            color=(0, 0, 0, 255),
+            thickness=thickness,
+        )
+
+        if size is not None:
+            contour_image = self.resize_image(
+                img=contour_image, size=size, fix_aspect=True
+            )
+
+        return contour_image
 
     def slice_intervals(
         self, image, contour, intervals=np.linspace(0, 1, 50), save=True
@@ -351,7 +411,7 @@ class Image(object):
             )
 
             np.savetxt(
-                self.save_dir + self.img_name + "_slices.csv",
+                self.save_dir + self.name + "_slices.csv",
                 info,
                 delimiter=",",
                 fmt=[
