@@ -55,40 +55,40 @@ ascheck
 After installing the package, you should be able to run it from
 anywhere within the terminal 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_terminal.png
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/ascheck_terminal.png
 "run ascheck in terminal")
 
 A dialog will open asking you for the folder that contains your
 images.
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_dialog.png
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/ascheck_dialog.png
 "ascheck asking for folder")
 
 Choose the folder and the program will ask some questions: do you want
 to compute the asymmetry?
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_dialog_asymmetry.png
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/ascheck_dialog_asymmetry.png
 "compute asymmetry?")
 
 Optionally, diagnostic images can also be saved to check whether
 anything went wrong in the automatic object detection.
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_dialog_diagnostics.png
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/ascheck_dialog_diagnostics.png
 "save diagnostics?")
 
 We also ask whether you want to compute the slices
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_dialog_slices.png
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/ascheck_dialog_slices.png
 "compute slices?")
 
 and how many
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/ascheck_dialog_n_slices.png
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/ascheck_dialog_n_slices.png
 "compute slices?")
 
 again, with optional diagnostics.
@@ -106,10 +106,10 @@ As diagnostic, the following images are saved:
 - image\_name\_contour.ext: grayscale image with the contour filled in red
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_asym.jpg 
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/example_asym.jpg 
 "asymmetric pixels")
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_contour.jpg 
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/example_contour.jpg 
 "contour filled")
 
 
@@ -126,33 +126,33 @@ As diagnostic, the object and all the coordinates are saved in
   with dots.
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_slices.jpg 
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/example_slices.jpg 
 "contour with intervals and intersections")
 
 
 ## Example
 We start out with the image of a biface.
 
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example.jpg "Biface image")
+![alt text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/example.jpg "Biface image")
 
 This image is then converted into a grayscale and the object is
 separated from the background. Now we have a black and white image of
 the biface for which we can find the contour.
 
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_bw.jpg "Biface image black and white")
+![alt text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/example_bw.jpg "Biface image black and white")
 
 The contour can then be flipped around the longest axis of the biface,
 which is assumed to be the axis of symmetry. By taking the difference
 between the minimum and maximum symmetric outlines, we find the number
 of asymmetric pixels.
 
-![alt text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_asym.jpg "Asymmetric pixels")
+![alt text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/example_asym.jpg "Asymmetric pixels")
 
 Computing the intervals along the longest axis, the intersections with
 the contour can then be found.
 
 ![alt
-text](https://github.com/StijnDebackere/AScheck/blob/master/examples/example_slices.jpg 
+text](https://github.com/StijnDebackere/AScheck/blob/de524e594281e76dbdcca8775b575015967f3d6c/examples/example_slices.jpg 
 "contour with intervals and intersections")
 
 ## Issues
